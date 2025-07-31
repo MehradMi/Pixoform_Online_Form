@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -535,7 +535,7 @@ def test_email():
 # ===== Serve frontend file =====
 @app.route("/")
 def index():
-    return send_from_directory(".", "form-frontend.html")
+    return render_template("form-frontend.html")
 
 # ===== Get all submissions (admin route) =====
 @app.route("/api/submissions", methods=["GET"])
