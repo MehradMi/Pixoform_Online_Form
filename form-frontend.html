@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پیکسوفرم - ارسال پروژه</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            direction: rtl;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: gradient-move 3s ease-in-out infinite;
+        }
+
+        @keyframes gradient-move {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+        }
+
+        .form-container {
+            padding: 50px 40px;
+        }
+
+        .form-section {
+            background: linear-gradient(145deg, #f8f9ff 0%, #ffffff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e8ecff;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.08);
+            position: relative;
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 0 20px 20px 0;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #667eea;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.05em;
+            transition: color 0.3s ease;
+        }
+
+        .required {
+            color: #e74c3c;
+            font-weight: 700;
+            margin-right: 3px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #e8ecff;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #fbfcff 0%, #ffffff 100%);
+            direction: rtl;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.06);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #a0a6b8;
+            font-weight: 400;
+        }
+
+        .radio-group {
+            display: grid;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            border: 2px solid #e8ecff;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #fbfcff 0%, #ffffff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radio-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: right 0.5s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+            background: linear-gradient(145deg, #f0f4ff 0%, #ffffff 100%);
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+        }
+
+        .radio-option:hover::before {
+            right: 100%;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-left: 15px;
+            transform: scale(1.3);
+            accent-color: #667eea;
+        }
+
+        .radio-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(145deg, #f0f4ff 0%, #ffffff 100%);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .radio-option label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        .validation-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            background: #ffeaea;
+            border-radius: 8px;
+            border-right: 3px solid #e74c3c;
+        }
+
+        .validation-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .field-hint {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 6px;
+            display: block;
+            font-weight: 400;
+        }
+
+        .form-group input.error,
+        .form-group textarea.error {
+            border-color: #e74c3c;
+            background: #ffeaea;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+        }
+
+        .form-group input.valid,
+        .form-group textarea.valid {
+            border-color: #27ae60;
+            background: #eafaf1;
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            display: none;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-right: 4px solid #28a745;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+        }
+
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-right: 4px solid #dc3545;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                padding: 40px 25px;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+            
+            .form-section {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .form-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>پیکسوفرم</h1>
+            <p>لطفاً مشخصات پروژه خود را با دقت وارد کنید</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form id="pixoform" onsubmit="submitForm(event)">
+                <div class="form-section">
+                    <div class="section-title">اطلاعات تماس</div>
+                    
+                    <div class="form-group">
+                        <label for="name">نام و نام خانوادگی <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required placeholder="مثال: علی رضایی">
+                        <div class="validation-message" id="name-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">آدرس ایمیل <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" required placeholder="example@email.com">
+                        <div class="validation-message" id="email-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone_number">شماره تماس <span class="required">*</span></label>
+                        <input type="tel" id="phone_number" name="phone_number" required placeholder="09xxxxxxxxx" maxlength="11">
+                        <div class="validation-message" id="phone-error"></div>
+                        <small class="field-hint">شماره تماس باید ۱۱ رقم و با ۰۹ شروع شود</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instagram_link">لینک پروفایل اینستاگرام</label>
+                        <input type="url" id="instagram_link" name="instagram_link" placeholder="https://instagram.com/username">
+                        <div class="validation-message" id="instagram-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">جزئیات پروژه</div>
+                    
+                    <div class="form-group">
+                        <label>نوع خدمت مورد نظر <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="reel" name="service_type" value="تولید ریل" required>
+                                <label for="reel">تولید ریل</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="post" name="service_type" value="پست شبکه اجتماعی" required>
+                                <label for="post">پست شبکه اجتماعی</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="story" name="service_type" value="استوری" required>
+                                <label for="story">استوری</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="branding" name="service_type" value="بسته برندینگ" required>
+                                <label for="branding">بسته برندینگ</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="other" name="service_type" value="سایر" required>
+                                <label for="other">سایر</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project_description">توضیحات کامل پروژه <span class="required">*</span></label>
+                        <textarea id="project_description" name="project_description" required placeholder="لطفاً پروژه مورد نظر خود را به تفصیل شرح دهید، اهداف، مخاطبان هدف و ویژگی‌های خاص آن را ذکر کنید..."></textarea>
+                        <div class="validation-message" id="description-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="budget_timeline">بودجه و زمان‌بندی پروژه</label>
+                        <textarea id="budget_timeline" name="budget_timeline" placeholder="محدوده بودجه مورد نظر و زمان تحویل پروژه را مشخص کنید..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additional_info">اطلاعات تکمیلی</label>
+                        <textarea id="additional_info" name="additional_info" placeholder="هرگونه توضیح اضافی، نمونه کارهای مرجع یا درخواست خاص..."></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="submitText">ارسال پروژه</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Validation functions
+        function validateEmail(email) {
+            const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return pattern.test(email) && !email.includes('..') && 
+                   !email.startsWith('.') && !email.endsWith('.') &&
+                   email.split('@').length === 2;
+        }
+
+        function validatePhoneNumber(phone) {
+            const cleanPhone = phone.replace(/\D/g, '');
+            return /^09\d{9}$/.test(cleanPhone) && cleanPhone.length === 11;
+        }
+
+        function showValidationMessage(fieldId, message, isError = true) {
+            const field = document.getElementById(fieldId);
+            const messageElement = document.getElementById(fieldId + '-error');
+            
+            if (messageElement) {
+                messageElement.textContent = message;
+                messageElement.classList.toggle('show', isError);
+            }
+            
+            field.classList.remove('error', 'valid');
+            if (isError && message) {
+                field.classList.add('error');
+            } else if (!isError) {
+                field.classList.add('valid');
+            }
+        }
+
+        function hideValidationMessage(fieldId) {
+            const messageElement = document.getElementById(fieldId + '-error');
+            const field = document.getElementById(fieldId);
+            
+            if (messageElement) {
+                messageElement.classList.remove('show');
+            }
+            field.classList.remove('error', 'valid');
+        }
+
+        // Real-time validation
+        document.getElementById('email').addEventListener('blur', function() {
+            const email = this.value.trim();
+            if (email && !validateEmail(email)) {
+                showValidationMessage('email', 'لطفاً یک آدرس ایمیل معتبر وارد کنید');
+            } else if (email) {
+                showValidationMessage('email', '', false);
+            } else {
+                hideValidationMessage('email');
+            }
+        });
+
+        document.getElementById('phone_number').addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 11) {
+                value = value.substring(0, 11);
+            }
+            this.value = value;
+        });
+
+        document.getElementById('phone_number').addEventListener('blur', function() {
+            const phone = this.value.trim();
+            if (phone && !validatePhoneNumber(phone)) {
+                showValidationMessage('phone', 'شماره تماس باید ۱۱ رقم و با ۰۹ شروع شود');
+            } else if (phone) {
+                showValidationMessage('phone', '', false);
+            } else {
+                hideValidationMessage('phone');
+            }
+        });
+
+        // Radio button selection
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll(`input[name="${this.name}"]`).forEach(r => {
+                    r.closest('.radio-option').classList.remove('selected');
+                });
+                this.closest('.radio-option').classList.add('selected');
+            });
+        });
+
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            const form = document.getElementById('pixoform');
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('spinner');
+            const submitText = document.getElementById('submitText');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Hide previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            // Show loading state
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            submitText.textContent = 'در حال ارسال...';
+
+            try {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // Client-side validation
+                let hasErrors = false;
+
+                if (!data.name || data.name.trim().length < 2) {
+                    showValidationMessage('name', 'نام باید حداقل ۲ کاراکتر باشد');
+                    hasErrors = true;
+                }
+
+                if (!data.email || !validateEmail(data.email)) {
+                    showValidationMessage('email', 'لطفاً یک آدرس ایمیل معتبر وارد کنید');
+                    hasErrors = true;
+                }
+
+                if (!data.phone_number || !validatePhoneNumber(data.phone_number)) {
+                    showValidationMessage('phone', 'شماره تماس باید ۱۱ رقم و با ۰۹ شروع شود');
+                    hasErrors = true;
+                }
+
+                if (!data.project_description || data.project_description.trim().length < 10) {
+                    showValidationMessage('description', 'توضیحات پروژه باید حداقل ۱۰ کاراکتر باشد');
+                    hasErrors = true;
+                }
+
+                if (hasErrors) {
+                    throw new Error('لطفاً اطلاعات را به درستی وارد کنید');
+                }
+
+                const response = await fetch('/submit-form', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    successMessage.innerHTML = `
+                        <strong>✅ موفقیت‌آمیز!</strong><br>
+                        ${result.message}
+                        ${result.warning ? `<br><small>⚠️ ${result.warning}</small>` : ''}
+                    `;
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    
+                    // Remove selected styling from radio buttons
+                    document.querySelectorAll('.radio-option.selected').forEach(option => {
+                        option.classList.remove('selected');
+                    });
+                    
+                    // Clear validation states
+                    document.querySelectorAll('.error, .valid').forEach(field => {
+                        field.classList.remove('error', 'valid');
+                    });
+                    
+                    successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    throw new Error(result.error || 'مشکلی در ارسال فرم رخ داده است');
+                }
+
+            } catch (error) {
+                errorMessage.innerHTML = `<strong>❌ خطا:</strong> ${error.message}`;
+                errorMessage.style.display = 'block';
+                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+                submitText.textContent = 'ارسال پروژه';
+            }
+        }
+    </script>
+</body>
+</html>
