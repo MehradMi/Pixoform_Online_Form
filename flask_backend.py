@@ -5,16 +5,20 @@ from email.mime.multipart import MIMEMultipart
 import sqlite3
 import re
 from datetime import datetime
+from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
+
+load_dotenv()
+
 
 # ===== Email Configuration =====
 EMAIL_CONFIG = {
     'smtp_server': 'mail.privateemail.com',
     'smtp_port': 587,  # TLS
-    'email': 'info@pixoform.com',
-    'password': 'G6F$b*7F*4$F',  # replace with your password
+    'email': f'{os.getenv("EMAIL")}',
+    'password': f'{os.getenv("EMAIL_PASSWORD")}' ,  
     'from_name': 'تیم پیکسوفرم'
 }
 
@@ -98,7 +102,7 @@ def validate_phone_number(phone):
     # Remove any spaces, dashes, or other characters
     clean_phone = re.sub(r'[^\d]', '', phone)
     
-    # Check if it matches the pattern: 09 followed by 9 digits
+    # Check if it matches the pat: 09*********
     pattern = r'^09\d{9}$'
     
     return bool(re.match(pattern, clean_phone)) and len(clean_phone) == 11
@@ -430,7 +434,7 @@ def submit_form():
     try:
         data = request.get_json()
         
-        # Define required fields
+        # Required fields
         required_fields = ["name", "email", "phone_number", "service_type", "project_description"]
         
         # Check for missing required fields
