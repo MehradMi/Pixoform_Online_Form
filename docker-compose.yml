@@ -1,10 +1,77 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  bot:
-    build: .
-    command: python flask_backend.py
-    env_file: .env
+  pixoform-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pixoform-backend
+    restart: unless-stopped
+    ports:
+      - "6000:6000"
+    environment:
+      - FLASK_ENV=production
+      - PORT=6000
+      - HOST=0.0.0.0
+      # Email configuration - set these in your .env file
+      - EMAIL=${EMAIL}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - SMTP_SERVER=${SMTP_SERVER:-mail.privateemail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - FROM_NAME=${FROM_NAME:-تیم پیکسوفرم}
+      # Admin token for API access
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
     volumes:
-      - ./dataset.db:/app/dataset.db
-    restart: always
+      # Persist database and logs
+      - pixoform_data:/app/data
+      - pixoform_logs:/app/logs
+      # Mount .env file (optional, if you prefer this over environment variables)
+      - ./.env:/app/.env:ro
+    networks:
+      - pixoform-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits (optional but recommended for production)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Reverse proxy with Nginx (optional but recommended for production)
+  nginx:
+    image: nginx:alpine
+    container_name: pixoform-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro  # Mount SSL certificates if you have them
+    depends_on:
+      - pixoform-app
+    networks:
+      - pixoform-network
+    # Uncomment the following if you want to use nginx
+    # profiles:
+    #   - production
+
+# Named volumes for data persistence
+volumes:
+  pixoform_data:
+    driver: local
+  pixoform_logs:
+    driver: local
+
+# Network configuration
+networks:
+  pixoform-network:
+    driver: bridge
