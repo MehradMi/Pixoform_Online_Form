@@ -7,25 +7,76 @@ import re
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
 
 app = Flask(__name__)
 
+# Load environment variables
 load_dotenv()
 
+# Configure logging for production
+if not app.debug:
+    # Create logs directory if it doesn't exist
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    
+    # Set up file logging with rotation
+    file_handler = RotatingFileHandler('logs/pixoform.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    
+    # Set up console logging
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s'
+    ))
+    console_handler.setLevel(logging.INFO)
+    app.logger.addHandler(console_handler)
+    
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Pixoform startup')
+
+# Security headers
+@app.after_request
+def after_request(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 # ===== Email Configuration =====
 EMAIL_CONFIG = {
-    'smtp_server': 'mail.privateemail.com',
-    'smtp_port': 587,  # TLS
-    'email': f'{os.getenv("EMAIL")}',
-    'password': f'{os.getenv("EMAIL_PASSWORD")}' ,  
-    'from_name': 'تیم پیکسوفرم'
+    'smtp_server': os.getenv('SMTP_SERVER', 'mail.privateemail.com'),
+    'smtp_port': int(os.getenv('SMTP_PORT', 587)),
+    'email': os.getenv('EMAIL'),
+    'password': os.getenv('EMAIL_PASSWORD'),
+    'from_name': os.getenv('FROM_NAME', 'تیم پیکسوفرم')
 }
 
+# Validate email configuration
+required_env_vars = ['EMAIL', 'EMAIL_PASSWORD']
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+if missing_vars:
+    app.logger.error(f"Missing required environment variables: {', '.join(missing_vars)}")
+    sys.exit(1)
+
 # ===== Database Setup =====
-DB_PATH = "submissions.db"
+DB_PATH = os.path.join(os.getcwd(), "data", "submissions.db")
+
+def ensure_data_directory():
+    """Ensure data directory exists"""
+    data_dir = os.path.dirname(DB_PATH)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir, exist_ok=True)
 
 def init_db():
+    ensure_data_directory()
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
@@ -44,28 +95,34 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+    app.logger.info("Database initialized successfully")
 
 def save_submission(form_data):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO form_submissions 
-        (name, email, phone_number, instagram_link, service_type, project_description, budget_timeline, additional_info)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        form_data.get('name'),
-        form_data.get('email'),
-        form_data.get('phone_number'),
-        form_data.get('instagram_link'),
-        form_data.get('service_type'),
-        form_data.get('project_description'),
-        form_data.get('budget_timeline'),
-        form_data.get('additional_info')
-    ))
-    conn.commit()
-    submission_id = cursor.lastrowid
-    conn.close()
-    return submission_id
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO form_submissions 
+            (name, email, phone_number, instagram_link, service_type, project_description, budget_timeline, additional_info)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            form_data.get('name'),
+            form_data.get('email'),
+            form_data.get('phone_number'),
+            form_data.get('instagram_link'),
+            form_data.get('service_type'),
+            form_data.get('project_description'),
+            form_data.get('budget_timeline'),
+            form_data.get('additional_info')
+        ))
+        conn.commit()
+        submission_id = cursor.lastrowid
+        conn.close()
+        app.logger.info(f"Form submission saved with ID: {submission_id}")
+        return submission_id
+    except Exception as e:
+        app.logger.error(f"Database error in save_submission: {e}")
+        raise
 
 def validate_email(email):
     """Validate email format with proper regex"""
@@ -102,7 +159,7 @@ def validate_phone_number(phone):
     # Remove any spaces, dashes, or other characters
     clean_phone = re.sub(r'[^\d]', '', phone)
     
-    # Check if it matches the pat: 09*********
+    # Check if it matches the pattern: 09*********
     pattern = r'^09\d{9}$'
     
     return bool(re.match(pattern, clean_phone)) and len(clean_phone) == 11
@@ -119,7 +176,7 @@ def normalize_phone_number(phone):
 # ===== Email Sending Functions =====
 def send_confirmation_email(form_data):
     try:
-        print(f"Sending confirmation email to: {form_data['email']}")
+        app.logger.info(f"Sending confirmation email to: {form_data['email']}")
         
         msg = MIMEMultipart()
         msg['From'] = f"{EMAIL_CONFIG['from_name']} <{EMAIL_CONFIG['email']}>"
@@ -330,11 +387,11 @@ def send_confirmation_email(form_data):
         server.starttls()
         server.login(EMAIL_CONFIG['email'], EMAIL_CONFIG['password'])
         server.send_message(msg)
-        print("✅ Confirmation email sent successfully")
+        app.logger.info("Confirmation email sent successfully")
         server.quit()
         return True
     except Exception as e:
-        print(f"❌ Email sending error: {e}")
+        app.logger.error(f"Email sending error: {e}")
         return False
 
 def send_internal_notification(form_data, submission_id):
@@ -421,18 +478,21 @@ def send_internal_notification(form_data, submission_id):
         server.starttls()
         server.login(EMAIL_CONFIG['email'], EMAIL_CONFIG['password'])
         server.send_message(msg)
-        print("✅ Internal notification sent successfully")
+        app.logger.info("Internal notification sent successfully")
         server.quit()
         return True
     except Exception as e:
-        print(f"❌ Internal notification error: {e}")
+        app.logger.error(f"Internal notification error: {e}")
         return False
 
-# ===== API Route =====
+# ===== API Routes =====
 @app.route("/submit-form", methods=["POST"])
 def submit_form():
     try:
         data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "داده‌های JSON معتبر ارسال نشده است"}), 400
         
         # Required fields
         required_fields = ["name", "email", "phone_number", "service_type", "project_description"]
@@ -486,7 +546,7 @@ def submit_form():
 
         # Save submission to database
         submission_id = save_submission(data)
-        print(f"✅ Form saved with ID: {submission_id}")
+        app.logger.info(f"Form saved with ID: {submission_id}")
 
         # Send confirmation email to user
         email_sent = send_confirmation_email(data)
@@ -502,22 +562,48 @@ def submit_form():
         
         if not email_sent:
             response_data["warning"] = "فرم ثبت شد اما ایمیل تایید ارسال نشد"
+            app.logger.warning("Confirmation email failed to send")
             
         if not notification_sent:
-            print("⚠️ Warning: Internal notification failed")
+            app.logger.warning("Internal notification failed to send")
 
         return jsonify(response_data), 200
 
     except Exception as e:
-        print(f"❌ Form submission error: {e}")
+        app.logger.error(f"Form submission error: {e}")
         return jsonify({
             "error": "خطای داخلی سرور. لطفاً دوباره تلاش کنید."
         }), 500
 
-# ===== Test email route (for debugging) =====
+# ===== Health check endpoint =====
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test database connection
+        conn = sqlite3.connect(DB_PATH)
+        conn.close()
+        
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "database": "connected"
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
+        return jsonify({
+            "status": "unhealthy",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }), 503
+
+# ===== Test email route (for debugging - remove in production) =====
 @app.route("/test-email", methods=["GET"])
 def test_email():
     """Test route to check email functionality"""
+    if os.getenv('FLASK_ENV') == 'production':
+        return jsonify({"error": "Test endpoint disabled in production"}), 404
+        
     test_data = {
         'name': 'تست کاربر',
         'email': 'test@example.com',
@@ -541,10 +627,17 @@ def test_email():
 def index():
     return render_template("form-frontend.html")
 
-# ===== Get all submissions (admin route) =====
+# ===== Get all submissions (admin route with basic auth) =====
 @app.route("/api/submissions", methods=["GET"])
 def get_submissions():
     try:
+        # Basic authentication check (you should implement proper auth)
+        auth_token = request.headers.get('Authorization')
+        expected_token = os.getenv('ADMIN_TOKEN')
+        
+        if not expected_token or auth_token != f"Bearer {expected_token}":
+            return jsonify({'error': 'غیرمجاز'}), 401
+        
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
@@ -573,12 +666,37 @@ def get_submissions():
         return jsonify(submissions), 200
         
     except Exception as e:
-        print(f"Error fetching submissions: {e}")
+        app.logger.error(f"Error fetching submissions: {e}")
         return jsonify({'error': 'خطا در دریافت اطلاعات'}), 500
 
-if __name__ == "__main__":
+# ===== Error handlers =====
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'صفحه مورد نظر یافت نشد'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(f"Internal server error: {error}")
+    return jsonify({'error': 'خطای داخلی سرور'}), 500
+
+# ===== Application factory pattern =====
+def create_app():
+    """Application factory"""
     init_db()
-    print("🚀 Starting Pixoform server...")
-    print("📧 Email configured for:", EMAIL_CONFIG['email'])
-    print("🔗 Visit: http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    return app
+
+if __name__ == "__main__":
+    # Initialize database
+    init_db()
+    
+    # Get configuration from environment
+    port = int(os.getenv('PORT', 6000))
+    host = os.getenv('HOST', '0.0.0.0')
+    debug = os.getenv('FLASK_ENV') != 'production'
+    
+    app.logger.info("🚀 Starting Pixoform server...")
+    app.logger.info(f"📧 Email configured for: {EMAIL_CONFIG['email']}")
+    app.logger.info(f"🔗 Visit: http://{host}:{port}")
+    
+    # Run the application
+    app.run(host=host, port=port, debug=debug)

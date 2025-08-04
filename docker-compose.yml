@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    command: python flask_backend.py
+    env_file: .env
+    volumes:
+      - ./dataset.db:/app/dataset.db
+    restart: always
