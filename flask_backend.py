@@ -690,13 +690,13 @@ if __name__ == "__main__":
     init_db()
     
     # Get configuration from environment
-    port = int(os.getenv('PORT', 6000))
-    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT'))
+    #host = os.getenv('HOST')
     debug = os.getenv('FLASK_ENV') != 'production'
     
     app.logger.info("🚀 Starting Pixoform server...")
     app.logger.info(f"📧 Email configured for: {EMAIL_CONFIG['email']}")
-    app.logger.info(f"🔗 Visit: http://{host}:{port}")
+    app.logger.info(f"🔗 Visit: http://204.152.218.164:{port}")
     
     # Run the application
     app.run(host=host, port=port, debug=debug)
