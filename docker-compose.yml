@@ -12,7 +12,7 @@ services:
     environment:
       - FLASK_ENV=production
       - PORT=6000
-      - HOST=0.0.0.0
+      - HOST='204.152.218.164'
       # Email configuration - set these in your .env file
       - EMAIL=${EMAIL}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
