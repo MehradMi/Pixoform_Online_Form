@@ -55,23 +55,23 @@
                         <label>نوع خدمت مورد نظر <span class="required">*</span></label>
                         <div class="radio-group">
                             <div class="radio-option">
-                                <input type="radio" id="reel" name="service_type" value="تولید ریل" required>
+                                <input type="checkbox" id="reel" name="service_type[]" value="تولید ریل">
                                 <label for="reel">تولید ریل</label>
                             </div>
                             <div class="radio-option">
-                                <input type="radio" id="post" name="service_type" value="پست شبکه اجتماعی" required>
+                                <input type="checkbox" id="post" name="service_type[]" value="پست شبکه اجتماعی">
                                 <label for="post">پست شبکه اجتماعی</label>
                             </div>
                             <div class="radio-option">
-                                <input type="radio" id="story" name="service_type" value="استوری" required>
+                                <input type="checkbox" id="story" name="service_type[]" value="استوری">
                                 <label for="story">استوری</label>
                             </div>
                             <div class="radio-option">
-                                <input type="radio" id="branding" name="service_type" value="بسته برندینگ" required>
+                                <input type="checkbox" id="branding" name="service_type[]" value="بسته برندینگ">
                                 <label for="branding">بسته برندینگ</label>
                             </div>
                             <div class="radio-option">
-                                <input type="radio" id="other" name="service_type" value="سایر" required>
+                                <input type="checkbox" id="other" name="service_type[]" value="سایر">
                                 <label for="other">سایر</label>
                             </div>
                         </div>
@@ -205,10 +205,31 @@
 
             try {
                 const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+                const data = {};
 
+                formData.forEach((value, key) => {
+                    if (key && key.endsWith("[]")) {
+                        const cleanKey = key.slice(0, -2); // remove []
+                        if (!data[cleanKey]) {
+                            data[cleanKey] = [];
+                        }
+                        data[cleanKey].push(value);
+                    } else if (key) {
+                        data[key] = value;
+                    }
+                });
+
+                
                 // Client-side validation
                 let hasErrors = false;
+
+                // Validate that at least one service is selected
+                const services = document.querySelectorAll('input[name="service_type[]"]:checked');
+                if (services.length === 0) {
+                    alert("لطفاً حداقل یک خدمت را انتخاب کنید");
+                    hasErrors = true;
+                }
+
 
                 if (!data.name || data.name.trim().length < 2) {
                     showValidationMessage('name', 'نام باید حداقل ۲ کاراکتر باشد');

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr
 import sqlite3
 import re
 from datetime import datetime
@@ -179,7 +180,7 @@ def send_confirmation_email(form_data):
         app.logger.info(f"Sending confirmation email to: {form_data['email']}")
         
         msg = MIMEMultipart()
-        msg['From'] = f"{EMAIL_CONFIG['from_name']} <{EMAIL_CONFIG['email']}>"
+        msg['From'] = formataddr((EMAIL_CONFIG['from_name'], EMAIL_CONFIG['email']))
         msg['To'] = form_data['email']
         msg['Subject'] = "تایید ثبت فرم - پیکسوفرم"
         
@@ -490,6 +491,15 @@ def send_internal_notification(form_data, submission_id):
 def submit_form():
     try:
         data = request.get_json()
+
+        # Handle multiple or single service_type
+        service_type = data.get("service_type") or data.get("service_type[]")
+        if isinstance(service_type, list):
+            service_type_str = ", ".join(service_type)
+        else:
+            service_type_str = str(service_type or "")
+
+        data["service_type"] = service_type_str
         
         if not data:
             return jsonify({"error": "داده‌های JSON معتبر ارسال نشده است"}), 400

@@ -195,7 +195,7 @@ body {
     gap: 10px;
 }
 
-.radio-option input[type="radio"] {
+.radio-option input[type="checkbox"] {
     flex: 0 0 20px; /* fixed width for alignment */
     margin: 0;
 }
