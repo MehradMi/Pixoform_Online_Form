@@ -8,7 +8,7 @@ services:
     ports:
       - "6000:6000"
     volumes:
-      - ./users.db:/app/submissions.db
+      - ./users.db:/app/data/submissions.db
       - ./static:/app/static
       - ./templates:/app/templates
     restart: always
