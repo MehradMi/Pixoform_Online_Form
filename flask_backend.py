@@ -699,4 +699,4 @@ if __name__ == "__main__":
     app.logger.info(f"🔗 Visit: http://204.152.218.164:{port}")
     
     # Run the application
-    app.run(host=host, port=port, debug=debug)
+    app.run(host='204.152.218.164', port=port, debug=debug)
