@@ -701,7 +701,7 @@ if __name__ == "__main__":
     
     # Get configuration from environment
     port = int(os.getenv('PORT'))
-    host = os.getenv('HOST', '127.0.0.1')
+    host = os.getenv('HOST', '0.0.0.0')
     debug = os.getenv('FLASK_ENV') != 'production'
     
     app.logger.info("🚀 Starting Pixoform server...")
