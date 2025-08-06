@@ -6,9 +6,9 @@ services:
     command: python flask_backend.py
     env_file: .env
     ports:
-      - "6000:6000"
+      - "10000:10000"
     volumes:
-      - ./users.db:/app/data/submissions.db
+      - ./submissions.db:/app/data/submissions.db
       - ./static:/app/static
       - ./templates:/app/templates
     restart: always
